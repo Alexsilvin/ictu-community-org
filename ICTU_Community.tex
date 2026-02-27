@@ -1,0 +1,130 @@
+% ICTU Community Documentation
+\documentclass[11pt]{article}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{longtable}
+\usepackage{listings}
+
+\geometry{margin=1in}
+\title{ICTU Community Application\newline Technical Documentation}
+\author{Generated for Presentation}
+\date{February 27, 2026}
+
+\begin{document}
+\maketitle
+
+\section*{Introduction}
+ICTU Community is a Kotlin-based mobile application tailored to university environments. It provides information flow and academic management for students, teachers, staff, and administrators. The backend is implemented with Node.js/Express while Supabase serves as the database.
+
+\section{User Roles and Features}
+\subsection{Students}
+\begin{itemize}
+  \item Read feeds, news, and newsletters (field-specific: coding, marketing).
+  \item Access class schedules and recordings.
+  \item Receive alerts for exams, CA, resits.
+  \item Notifications for assignments and registrations (experimental).
+\end{itemize}
+
+\subsection{Teachers}
+\begin{itemize}
+  \item Publish courses and upload materials.
+  \item Create and send assignments.
+  \item Read feeds, news.
+  \item Assign class delegates from enrolled students.
+\end{itemize}
+
+\subsection{Staff}
+Basic features:
+\begin{itemize}
+  \item Manage timetables and classrooms.
+  \item Handle administrative requests (transcripts, registration).
+  \item Publish campus-wide announcements.
+\end{itemize}
+
+\subsection{Administrators}
+\begin{itemize}
+  \item CRUD user accounts and manage roles.
+  \item Configure system settings (semester dates, policies).
+  \item Moderate feed and news content.
+\end{itemize}
+
+\section{System Architecture}
+\subsection{Frontend}
+Kotlin Android application employing MVVM architecture. Components include:
+\begin{itemize}
+  \item ViewModels using LiveData or StateFlow.
+  \item Retrofit for REST API communication.
+  \item Hilt/Koin for dependency injection.
+\end{itemize}
+
+\subsection{Backend}
+Node.js with Express framework. Key patterns:
+\begin{itemize}
+  \item Controllers and services per domain (users, feeds, notifications).
+  \item JWT for authentication and RBAC.
+  \item RESTful endpoints with JSON responses.
+\end{itemize}
+
+\subsection{Database}
+Supabase (PostgreSQL) with tables for users, roles, feeds, classes, assignments, notifications. Row-level security enforces access policies.
+
+\section{Requirements}
+\subsection{Functional Requirements}
+\begin{enumerate}
+  \item User authentication and authorization.
+  \item CRUD operations for all major entities.
+  \item Real-time or push notifications.
+  \item File uploads and streaming for lectures.
+\end{enumerate}
+
+\subsection{Non-Functional Requirements}
+\begin{itemize}
+  \item Performance: API latency <200ms.
+  \item Scalability: handle thousands of concurrent users.
+  \item Security: HTTPS, JWT, RLS.
+  \item Maintainability: modular, documented codebase.
+  \item Usability: intuitive UI/UX, accessibility.
+\end{itemize}
+
+\section{Design Patterns}
+\begin{itemize}
+  \item MVVM (frontend).
+  \item Repository pattern for data access.
+  \item Observer pattern for notifications.
+  \item Singleton for shared services.
+  \item Dependency Injection (Hilt/Koin).
+\end{itemize}
+
+\section{User Stories}
+\begin{longtable}{p{0.2\textwidth} p{0.7\textwidth}}
+\textbf{Role} & \textbf{Story} \\
+\hline
+Student & As a student, I want to log in and see the latest news. \\
+Student & As a student, I want to register for classes and get notified. \\
+Teacher & As a teacher, I want to upload course materials. \\
+Teacher & As a teacher, I want to assign a class representative. \\
+Staff & As staff, I want to post campus announcements. \\
+Admin & As an administrator, I want to deactivate a user. \\
+\end{longtable}
+
+\section{Diagrams and Models}
+%% Placeholder for diagrams; include actual images or PlantUML code as needed.
+\subsection{Use Case Diagram}
+% \includegraphics[width=\linewidth]{usecase.png}
+
+\subsection{Class Diagram}
+% \includegraphics[width=\linewidth]{classdiagram.png}
+
+\subsection{Sequence Diagram}
+% \includegraphics[width=\linewidth]{sequencediagram.png}
+
+\section{Future Enhancements}
+\begin{itemize}
+  \item Real-time chat.
+  \item Analytics dashboard.
+  \item Offline caching and synchronization.
+  \item Multi-language support.
+\end{itemize}
+
+\end{document}
