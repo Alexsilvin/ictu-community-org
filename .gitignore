@@ -1,0 +1,58 @@
+# Gradle
+.gradle/
+build/
+*.apk
+*.aar
+*.ap_
+*.aab
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Android Studio
+local.properties
+.classpath
+.project
+.cproject
+.c9/
+*.class
+
+# Compiled files
+*.dex
+
+# Generated files
+gen/
+out/
+
+# Libraries
+libs/
+
+# Log files
+*.log
+logs/
+
+# Environment
+.env
+.env.local
+
+# Dependencies
+node_modules/
+
+# Kotlin
+.kotlin/
+
+# Misc
+.gradle
+.idea
+build
+captures
+gradlew
+gradlew.bat
+gradle/
