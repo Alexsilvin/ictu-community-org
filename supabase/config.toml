@@ -1,0 +1,9 @@
+# Supabase local development configuration
+# This file is used by the Supabase CLI.
+# Docs: https://supabase.com/docs/guides/cli
+
+project_id = "grlrrdaarzczjnqdeahh"
+
+[functions]
+# If you later add function-level config, you can place it here.
+

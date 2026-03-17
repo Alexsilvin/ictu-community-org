@@ -159,44 +159,73 @@ class _LoginScreenState extends State<LoginScreen> {
                       SizedBox(
                         width: 222 * sx,
                         height: 37 * sy,
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(54),
-                            gradient: const LinearGradient(
-                              colors: [Color(0x91D49100), Color(0x9114154C)],
-                            ),
-                          ),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(54),
-                              onTap: _onLogin,
-                              child: const Center(
-                                child: Text(
-                                  'Login',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 32,
-                                    height: 1,
-                                    shadows: [
-                                      Shadow(
-                                        blurRadius: 6.4,
-                                        offset: Offset(0, 4),
-                                        color: Color(0x40000000),
+                        child: ValueListenableBuilder<bool>(
+                          valueListenable: _authController.isLoading,
+                          builder: (context, loading, _) {
+                            return DecoratedBox(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(54),
+                                gradient: LinearGradient(
+                                  colors: loading
+                                      ? const [
+                                          Color(0x5599A3AF),
+                                          Color(0x55808A9A)
+                                        ]
+                                      : const [
+                                          Color(0x91D49100),
+                                          Color(0x9114154C)
+                                        ],
+                                ),
+                              ),
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(54),
+                                  onTap: loading ? null : _onLogin,
+                                  child: Center(
+                                    child: Text(
+                                      loading ? '...' : 'Login',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 32,
+                                        height: 1,
+                                        shadows: [
+                                          Shadow(
+                                            blurRadius: 6.4,
+                                            offset: Offset(0, 4),
+                                            color: Color(0x40000000),
+                                          ),
+                                          Shadow(
+                                            blurRadius: 4,
+                                            offset: Offset(0, 4),
+                                            color: Color(0x40000000),
+                                          ),
+                                        ],
                                       ),
-                                      Shadow(
-                                        blurRadius: 4,
-                                        offset: Offset(0, 4),
-                                        color: Color(0x40000000),
-                                      ),
-                                    ],
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ),
+                            );
+                          },
                         ),
+                      ),
+                      SizedBox(height: 10 * sy),
+                      ValueListenableBuilder<String?>(
+                        valueListenable: _authController.errorMessage,
+                        builder: (context, err, _) {
+                          if (err == null) return const SizedBox.shrink();
+                          return Text(
+                            err,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: Color(0xFFFEE2E2),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
