@@ -29,10 +29,7 @@ function assertStrongPassword(password: string): void {
   }
 }
 
-// IMPORTANT: keep roles strict.
-// If you allow self-registration, users must not be able to choose privileged roles.
-// Add more roles here ONLY if you have a separate, trusted onboarding flow.
-const ALLOWED_ROLES = ['student'] as const;
+const ALLOWED_ROLES = ['student', 'delegate', 'lecturer'] as const;
 type AllowedRole = (typeof ALLOWED_ROLES)[number];
 
 function assertRole(role: string): asserts role is AllowedRole {
