@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../navigation/screens/main_shell.dart';
 import '../controllers/auth_controller.dart';
+import '../utils/auth_validation.dart';
 import 'signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -16,6 +17,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final AuthController _authController = AuthController();
 
+  String? _errorText;
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -25,10 +28,33 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _onLogin() async {
+    setState(() {
+      _errorText = null;
+    });
+
+    final emailErr = AuthValidation.validateIctuEmail(_emailController.text);
+    if (emailErr != null) {
+      setState(() => _errorText = emailErr);
+      return;
+    }
+
+    final passErr = AuthValidation.validateStrongPassword(_passwordController.text);
+    if (passErr != null) {
+      setState(() => _errorText = passErr);
+      return;
+    }
+
     await _authController.signIn(
       email: _emailController.text.trim(),
       password: _passwordController.text,
     );
+
+    final String? authError = _authController.errorMessage.value;
+    if (authError != null) {
+      setState(() {
+        _errorText = authError;
+      });
+    }
 
     if (!mounted || !_authController.isLoggedIn.value) {
       return;
@@ -157,47 +183,63 @@ class _LoginScreenState extends State<LoginScreen> {
                         obscureText: true,
                       ),
                       SizedBox(height: 18 * sy),
-                      SizedBox(
-                        width: 222 * sx,
-                        height: 37 * sy,
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(54),
-                            gradient: const LinearGradient(
-                              colors: [Color(0x91D49100), Color(0x9114154C)],
-                            ),
+                      if (_errorText != null) ...[
+                        Text(
+                          _errorText!,
+                          style: const TextStyle(
+                            color: Color(0xFFF87171),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
                           ),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(54),
-                              onTap: _onLogin,
-                              child: const Center(
-                                child: Text(
-                                  'Login',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 32,
-                                    height: 1,
-                                    shadows: [
-                                      Shadow(
-                                        blurRadius: 6.4,
-                                        offset: Offset(0, 4),
-                                        color: Color(0x40000000),
+                        ),
+                        const SizedBox(height: 6),
+                      ],
+                      ValueListenableBuilder<bool>(
+                        valueListenable: _authController.isLoading,
+                        builder: (context, loading, _) {
+                          return SizedBox(
+                            width: 222 * sx,
+                            height: 37 * sy,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(54),
+                                gradient: const LinearGradient(
+                                  colors: [Color(0x91D49100), Color(0x9114154C)],
+                                ),
+                              ),
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(54),
+                                  onTap: loading ? null : _onLogin,
+                                  child: Center(
+                                    child: Text(
+                                      loading ? 'Signing in...' : 'Login',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 32,
+                                        height: 1,
+                                        shadows: [
+                                          Shadow(
+                                            blurRadius: 6.4,
+                                            offset: Offset(0, 4),
+                                            color: Color(0x40000000),
+                                          ),
+                                          Shadow(
+                                            blurRadius: 4,
+                                            offset: Offset(0, 4),
+                                            color: Color(0x40000000),
+                                          ),
+                                        ],
                                       ),
-                                      Shadow(
-                                        blurRadius: 4,
-                                        offset: Offset(0, 4),
-                                        color: Color(0x40000000),
-                                      ),
-                                    ],
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                        ),
+                          );
+                        },
                       ),
                       const SizedBox(height: 8),
                       TextButton(

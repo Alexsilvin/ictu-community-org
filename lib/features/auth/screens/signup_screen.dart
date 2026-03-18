@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../navigation/screens/main_shell.dart';
 import '../controllers/auth_controller.dart';
+import '../utils/auth_validation.dart';
 import 'login_screen.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -18,6 +19,11 @@ class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController _confirmPasswordController =
       TextEditingController();
   final AuthController _authController = AuthController();
+
+  // Backend-required fields (see Supabase `register` function).
+  // Keeping simple defaults for now; can be upgraded to dropdown inputs later.
+  String _role = 'student';
+  String _faculty = 'ICTU';
 
   String? _errorText;
 
@@ -36,28 +42,48 @@ class _SignupScreenState extends State<SignupScreen> {
       _errorText = null;
     });
 
-    if (_nameController.text.trim().isEmpty ||
-        _emailController.text.trim().isEmpty ||
-        _passwordController.text.isEmpty ||
-        _confirmPasswordController.text.isEmpty) {
-      setState(() {
-        _errorText = 'Please fill in all fields.';
-      });
+    final nameErr = AuthValidation.validateFullName(_nameController.text);
+    if (nameErr != null) {
+      setState(() => _errorText = nameErr);
       return;
     }
 
-    if (_passwordController.text != _confirmPasswordController.text) {
-      setState(() {
-        _errorText = 'Passwords do not match.';
-      });
+    final emailErr = AuthValidation.validateIctuEmail(_emailController.text);
+    if (emailErr != null) {
+      setState(() => _errorText = emailErr);
       return;
     }
 
-    // Placeholder signup flow using existing auth controller.
-    await _authController.signIn(
+    final passErr = AuthValidation.validateStrongPassword(_passwordController.text);
+    if (passErr != null) {
+      setState(() => _errorText = passErr);
+      return;
+    }
+
+    final confirmErr = AuthValidation.validateConfirmPassword(
+      _passwordController.text,
+      _confirmPasswordController.text,
+    );
+    if (confirmErr != null) {
+      setState(() => _errorText = confirmErr);
+      return;
+    }
+
+    await _authController.signUp(
       email: _emailController.text.trim(),
       password: _passwordController.text,
+      username: _nameController.text.trim(),
+      role: _role,
+      faculty: _faculty,
     );
+
+    // Surface backend error (if any) in the existing inline error area.
+    final String? authError = _authController.errorMessage.value;
+    if (authError != null) {
+      setState(() {
+        _errorText = authError;
+      });
+    }
 
     if (!mounted || !_authController.isLoggedIn.value) {
       return;
@@ -198,6 +224,44 @@ class _SignupScreenState extends State<SignupScreen> {
                         controller: _confirmPasswordController,
                         obscureText: true,
                       ),
+                      const SizedBox(height: 6),
+                      // Keep these as defaults to satisfy the backend contract.
+                      // We use small, unobtrusive selectors so the UI doesn't shift much.
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _CompactDropdown<String>(
+                              label: 'Role',
+                              isDark: isDark,
+                              value: _role,
+                              items: const [
+                                DropdownMenuItem(
+                                  value: 'student',
+                                  child: Text('Student'),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'delegate',
+                                  child: Text('Delegate'),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'lecturer',
+                                  child: Text('Lecturer'),
+                                ),
+                              ],
+                              onChanged: (v) => setState(() => _role = v ?? _role),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: _CompactTextInput(
+                              label: 'Faculty',
+                              isDark: isDark,
+                              initialValue: _faculty,
+                              onChanged: (v) => _faculty = v.trim().isEmpty ? _faculty : v.trim(),
+                            ),
+                          ),
+                        ],
+                      ),
                       if (_errorText != null) ...[
                         const SizedBox(height: 8),
                         Text(
@@ -210,47 +274,52 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                       ],
                       SizedBox(height: 14 * sy),
-                      SizedBox(
-                        width: 222 * sx,
-                        height: 37 * sy,
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(54),
-                            gradient: const LinearGradient(
-                              colors: [Color(0x91D49100), Color(0x9114154C)],
-                            ),
-                          ),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(54),
-                              onTap: _onSignup,
-                              child: const Center(
-                                child: Text(
-                                  'Sign Up',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 28,
-                                    height: 1,
-                                    shadows: [
-                                      Shadow(
-                                        blurRadius: 6.4,
-                                        offset: Offset(0, 4),
-                                        color: Color(0x40000000),
+                      ValueListenableBuilder<bool>(
+                        valueListenable: _authController.isLoading,
+                        builder: (context, loading, _) {
+                          return SizedBox(
+                            width: 222 * sx,
+                            height: 37 * sy,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(54),
+                                gradient: const LinearGradient(
+                                  colors: [Color(0x91D49100), Color(0x9114154C)],
+                                ),
+                              ),
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(54),
+                                  onTap: loading ? null : _onSignup,
+                                  child: Center(
+                                    child: Text(
+                                      loading ? 'Creating...' : 'Sign Up',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 28,
+                                        height: 1,
+                                        shadows: [
+                                          Shadow(
+                                            blurRadius: 6.4,
+                                            offset: Offset(0, 4),
+                                            color: Color(0x40000000),
+                                          ),
+                                          Shadow(
+                                            blurRadius: 4,
+                                            offset: Offset(0, 4),
+                                            color: Color(0x40000000),
+                                          ),
+                                        ],
                                       ),
-                                      Shadow(
-                                        blurRadius: 4,
-                                        offset: Offset(0, 4),
-                                        color: Color(0x40000000),
-                                      ),
-                                    ],
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                        ),
+                          );
+                        },
                       ),
                       const SizedBox(height: 6),
                       TextButton(
@@ -416,3 +485,162 @@ class _GradientText extends StatelessWidget {
     );
   }
 }
+
+class _CompactDropdown<T> extends StatelessWidget {
+  const _CompactDropdown({
+    required this.label,
+    required this.isDark,
+    required this.value,
+    required this.items,
+    required this.onChanged,
+  });
+
+  final String label;
+  final bool isDark;
+  final T value;
+  final List<DropdownMenuItem<T>> items;
+  final ValueChanged<T?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            color: isDark ? Colors.white : Colors.black,
+            fontFamily: 'Kode Mono',
+          ),
+        ),
+        const SizedBox(height: 4),
+        SizedBox(
+          height: 31,
+          child: DropdownButtonFormField<T>(
+            initialValue: value,
+            items: items,
+            onChanged: onChanged,
+            decoration: InputDecoration(
+              isDense: true,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 8,
+              ),
+              filled: true,
+              fillColor: const Color(0x82D9D9D9),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15),
+                borderSide: const BorderSide(
+                  color: Color(0xFFF59E0B),
+                  width: 1,
+                ),
+              ),
+            ),
+            style: TextStyle(
+              color: isDark ? Colors.white : Colors.black,
+              fontSize: 12,
+            ),
+            dropdownColor: const Color(0xFFCBD5E1),
+            iconEnabledColor: isDark ? Colors.white : Colors.black,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _CompactTextInput extends StatefulWidget {
+  const _CompactTextInput({
+    required this.label,
+    required this.isDark,
+    required this.initialValue,
+    required this.onChanged,
+  });
+
+  final String label;
+  final bool isDark;
+  final String initialValue;
+  final ValueChanged<String> onChanged;
+
+  @override
+  State<_CompactTextInput> createState() => _CompactTextInputState();
+}
+
+class _CompactTextInputState extends State<_CompactTextInput> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialValue);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          widget.label,
+          style: TextStyle(
+            fontSize: 11,
+            color: widget.isDark ? Colors.white : Colors.black,
+            fontFamily: 'Kode Mono',
+          ),
+        ),
+        const SizedBox(height: 4),
+        SizedBox(
+          height: 31,
+          child: TextField(
+            controller: _controller,
+            onChanged: widget.onChanged,
+            style: TextStyle(
+              color: widget.isDark ? Colors.white : Colors.black,
+              fontSize: 12,
+            ),
+            decoration: InputDecoration(
+              isDense: true,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 8,
+              ),
+              filled: true,
+              fillColor: const Color(0x82D9D9D9),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15),
+                borderSide: const BorderSide(
+                  color: Color(0xFFF59E0B),
+                  width: 1,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
