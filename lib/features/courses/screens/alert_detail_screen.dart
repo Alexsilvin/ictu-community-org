@@ -53,8 +53,11 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        centerTitle: true,
-        leading: const SizedBox(width: 56),
+        leading: IconButton(
+          tooltip: 'Back',
+          onPressed: () => Navigator.of(context).pop(),
+          icon: Icon(Icons.arrow_back, color: Colors.white.withValues(alpha: 0.85)),
+        ),
         title: Text(
           a.title,
           maxLines: 1,
