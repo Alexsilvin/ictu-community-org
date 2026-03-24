@@ -107,7 +107,6 @@ class _RecordTab extends StatefulWidget {
 
 class _RecordTabState extends State<_RecordTab> with SingleTickerProviderStateMixin {
   static const Color _accent = Color(0xFFF58220);
-  static const Color _glass = Color(0xFF0A0C10);
 
   final AudioRecorder _recorder = AudioRecorder();
   final AudioPlayer _player = AudioPlayer();
@@ -1073,23 +1072,6 @@ class _UploadTabStatefulState extends State<_UploadTabStateful> {
   }
 }
 
-class _ActionGrid extends StatelessWidget {
-  const _ActionGrid({required this.actions});
-
-  final List<_ActionCardData> actions;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(child: _ActionCard(data: actions[0])),
-        const SizedBox(width: 14),
-        Expanded(child: _ActionCard(data: actions[1])),
-      ],
-    );
-  }
-}
-
 class _ActionCardData {
   const _ActionCardData({
     required this.icon,
@@ -1144,7 +1126,9 @@ class _ActionCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
                   color: Colors.white.withValues(alpha: 0.03),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.08),
+                  ),
                 ),
                 child: Icon(data.icon, color: data.iconColor, size: 22),
               ),
@@ -1185,6 +1169,7 @@ class _ActionCard extends StatelessWidget {
     );
   }
 }
+
 
 class _GlassTile extends StatelessWidget {
   const _GlassTile({

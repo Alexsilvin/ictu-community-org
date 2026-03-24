@@ -2,13 +2,11 @@ import 'dart:convert';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../../core/supabase/supabase_instance.dart';
-
 typedef JsonMap = Map<String, dynamic>;
 
 class TranscriptionApi {
   TranscriptionApi({SupabaseClient? client})
-      : _client = client ?? SupabaseInstance.client;
+      : _client = client ?? Supabase.instance.client;
 
   final SupabaseClient _client;
 

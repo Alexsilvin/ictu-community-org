@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../community/screens/community_feed_screen.dart';
-import '../../courses/screens/course_details_screen.dart';
+import '../../courses/screens/course_tracker_shell.dart';
 import '../../courses/screens/timetable_screen.dart';
 import '../../home/screens/home_dashboard_screen.dart';
 import '../../news/screens/campus_news_screen.dart';
@@ -38,7 +38,7 @@ class _MainShellState extends State<MainShell> {
       ),
       const CommunityFeedScreen(),
       const TimetableScreen(),
-      const CourseDetailsScreen(),
+      const CourseTrackerScreen(),
       const CampusNewsScreen(),
     ];
 

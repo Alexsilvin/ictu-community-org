@@ -50,10 +50,13 @@ class _CourseSearchScreenState extends State<CourseSearchScreen>
           topRight: Radius.circular(24),
         ),
       ),
-      child: WillPopScope(
-        onWillPop: () async {
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) {
+          if (didPop) {
+            return;
+          }
           _animateBack(context);
-          return false;
         },
         child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),

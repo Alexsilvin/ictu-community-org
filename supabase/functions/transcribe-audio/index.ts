@@ -63,8 +63,13 @@ Deno.serve(async (req) => {
 
 	// Initialize Supabase
 	const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-	const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
-	const supabase = createClient(supabaseUrl, supabaseKey);
+	// IMPORTANT: use service role key inside Edge Functions so RLS does not block
+	// server-side processing (storage downloads + lectures updates).
+	const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+	if (!serviceRoleKey) {
+	  throw new Error('SUPABASE_SERVICE_ROLE_KEY not configured');
+	}
+	const supabase = createClient(supabaseUrl, serviceRoleKey);
 
 	// Get Gemini API key
 	const geminiApiKey = Deno.env.get('GEMINI_API_KEY');

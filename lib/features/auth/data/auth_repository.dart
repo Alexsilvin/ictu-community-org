@@ -1,6 +1,8 @@
 import 'auth_api.dart';
 import 'auth_storage.dart';
 
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 typedef JsonMap = Map<String, dynamic>;
 
 class AuthRepository {
@@ -17,6 +19,15 @@ class AuthRepository {
     if (token != null && token.isNotEmpty) {
       await _storage.saveAccessToken(token);
     }
+
+    // IMPORTANT: The edge function login does not automatically create a
+    // Supabase Auth session on the client. Storage + RLS require an authenticated
+    // supabase_flutter session (JWT attached to requests).
+    await Supabase.instance.client.auth.signInWithPassword(
+      email: email,
+      password: password,
+    );
+
     return data;
   }
 
@@ -39,11 +50,29 @@ class AuthRepository {
     if (token != null && token.isNotEmpty) {
       await _storage.saveAccessToken(token);
     }
+
+    // Establish an authenticated session for subsequent Storage/DB calls.
+    // If the user already exists, signUp may fail; we fall back to signIn.
+    try {
+      await Supabase.instance.client.auth.signUp(
+        email: email,
+        password: password,
+      );
+    } catch (_) {
+      await Supabase.instance.client.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+    }
+
     return data;
   }
 
   Future<String?> getStoredToken() => _storage.readAccessToken();
 
-  Future<void> logout() => _storage.clear();
+  Future<void> logout() async {
+    await Supabase.instance.client.auth.signOut();
+    await _storage.clear();
+  }
 }
 
